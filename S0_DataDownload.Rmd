@@ -1,15 +1,14 @@
 ---
-title: "Downloading US NHANES 2003-2004 2003-2004 and 2013-2014 data"
-author: "Water and Health Laboratory - Cyprus University of Technology"
+title: "Downloading US NHANES 2013-2014 2015-2016 and 2017-2018 data"
+author: "Stavros Oikonomou"
 date: '`r format(Sys.time(), "%d %B, %Y")`'
-output:  
-  rmdformats::material:
-    highlight: kate
+output: html_document
 editor_options: 
-  chunk_output_type: console
+  markdown: 
+    wrap: 72
 ---
 
-```{r S0-DataDownload-final-1, include=FALSE}
+```{r loading data, include=FALSE}
 
 ipak <- function(pkg) {
   new.pkg <- pkg[!(pkg %in% installed.packages()[, "Package"])]
@@ -25,7 +24,7 @@ ipak(packages)
 
 # Downloading 2013-2014 data
 
-```{r S0-DataDownload-final-2 }
+```{r files 13-14 }
 theme_xpt <- c(
   "ALB_CR_H.XPT","BIOPRO_H.XPT","BMX_H.XPT","BPX_H.XPT","CBC_H.XPT","COT_H.XPT",
   "DBQ_H.XPT","DEMO_H.XPT","DIQ_H.XPT","DR1TOT_H.XPT","FASTQX_H.XPT","GHB_H.XPT",
@@ -34,7 +33,7 @@ theme_xpt <- c(
 )
 ```
 
-```{r S0-DataDownload-final-3 }
+```{r download 13-14 }
 df_2013_2014 <- as.data.frame(theme_xpt) %>%
   mutate(complete_urls = paste0("https://wwwn.cdc.gov/Nchs/Nhanes/2013-2014/", theme_xpt)) %>%
   mutate(rds_name = paste0(str_replace_all(theme_xpt, "\\.XPT", "\\.rds"))) %>%
@@ -44,8 +43,8 @@ xpt_files <- df_2013_2014$complete_urls
 
 vars_summary_all <- data.frame()
 
-ifelse(!dir.exists("data/S2013_2014_rds/"),
-  dir.create("data/S2013_2014_rds/", recursive = TRUE), FALSE
+ifelse(!dir.exists("raw_data/df_2013_2014_rds/"),
+  dir.create("raw_data/df_2013_2014_rds/", recursive = TRUE), FALSE
 )
 
 for (i in 1:length(xpt_files)) {
@@ -55,7 +54,7 @@ for (i in 1:length(xpt_files)) {
   temp_data <- read_xpt(url(data_url_string)) %>%
     clean_names(case = "snake")
 
-  saveRDS(temp_data, file = paste0("data/S2013_2014_rds/", df_2013_2014[i, "rds_name"]))
+  saveRDS(temp_data, file = paste0("raw_data/df_2013_2014_rds/", df_2013_2014[i, "rds_name"]))
   rm(temp_data, data_url_string)
 
   htm_url_string <- df_2013_2014[i, "htm_files"]
@@ -63,7 +62,7 @@ for (i in 1:length(xpt_files)) {
   download.file(
     url = htm_url_string,
     destfile = paste0(
-      "data/S2013_2014_rds/",
+      "raw_data/df_2013_2014_rds/",
       str_replace_all(htm_url_string, "https\\:\\/\\/wwwn\\.cdc.gov\\/Nchs\\/Nhanes\\/2013-2014\\/", "")
     )
   )
@@ -89,7 +88,7 @@ saveRDS(vars_summary_all, "file_data/vars_summary_all_2013.rds")
 
 # Downloading 2015-2016 data
 
-```{r S0-DataDownload-final-4 }
+```{r files 15-16}
 theme_xpt_1516 <- c(
   "ALB_CR_I.XPT","BIOPRO_I.XPT","BMX_I.XPT","BPX_I.XPT","CBC_I.XPT","COT_I.XPT","DBQ_I.XPT",
   "DEMO_I.XPT","DIQ_I.XPT","DR1TOT_I.XPT","FASTQX_I.XPT","GHB_I.XPT","HDL_I.XPT","HEPA_I.XPT",
@@ -99,7 +98,7 @@ theme_xpt_1516 <- c(
 ```
 
 
-```{r S0-DataDownload-final-5 }
+```{r download 15-16}
 df_2015_2016 <- as.data.frame(theme_xpt_1516) %>%
   mutate(complete_urls = paste0("https://wwwn.cdc.gov/Nchs/Nhanes/2015-2016/", theme_xpt_1516)) %>%
   mutate(rds_name = paste0(str_replace_all(theme_xpt_1516, "\\.XPT", "\\.rds"))) %>%
@@ -109,8 +108,8 @@ xpt_files_1516 <- df_2015_2016$complete_urls
 
 vars_summary_all_1516 <- data.frame()
 
-ifelse(!dir.exists("data/S2015_2016_rds/"),
-  dir.create("data/S2015_2016_rds/", recursive = TRUE), FALSE
+ifelse(!dir.exists("raw_data/df_2015_2016_rds/"),
+  dir.create("raw_data/df_2015_2016_rds/", recursive = TRUE), FALSE
 )
 
 for (i in 1:length(xpt_files_1516)) {
@@ -119,7 +118,7 @@ for (i in 1:length(xpt_files_1516)) {
   temp_data <- read_xpt(url(data_url_string)) %>%
     clean_names(case = "snake")
 
-  saveRDS(temp_data, file = paste0("data/S2015_2016_rds/", df_2015_2016[i, "rds_name"]))
+  saveRDS(temp_data, file = paste0("raw_data/df_2015_2016_rds/", df_2015_2016[i, "rds_name"]))
   rm(temp_data, data_url_string)
 
   htm_url_string <- df_2015_2016[i, "htm_files"]
@@ -127,7 +126,7 @@ for (i in 1:length(xpt_files_1516)) {
   download.file(
     url = htm_url_string,
     destfile = paste0(
-      "data/S2015_2016_rds/",
+      "raw_data/df_2015_2016_rds/",
       str_replace_all(htm_url_string, "https\\:\\/\\/wwwn\\.cdc.gov\\/Nchs\\/Nhanes\\/2015-2016\\/", "")
     )
   )
@@ -153,7 +152,7 @@ saveRDS(vars_summary_all_1516, "file_data/vars_summary_all_2015.rds")
 
 # Downloading 2017-2018 data
 
-```{r S0-DataDownload-final-4 }
+```{r files 17-18}
 theme_xpt_1718 <- c(
   "ALB_CR_J.XPT","BIOPRO_J.XPT","BMX_J.XPT","BPX_J.XPT","CBC_J.XPT","COT_J.XPT","DBQ_J.XPT",
   "DEMO_J.XPT","DIQ_J.XPT","DR1TOT_J.XPT","FASTQX_J.XPT","GHB_J.XPT","HDL_J.XPT","HEPA_J.XPT",
@@ -163,7 +162,7 @@ theme_xpt_1718 <- c(
 ```
 
 
-```{r }
+```{r download 17-18}
 df_2017_2018 <- as.data.frame(theme_xpt_1718) %>%
   mutate(complete_urls = paste0("https://wwwn.cdc.gov/Nchs/Nhanes/2017-2018/", theme_xpt_1718)) %>%
   mutate(rds_name = paste0(str_replace_all(theme_xpt_1718, "\\.XPT", "\\.rds"))) %>%
@@ -173,8 +172,8 @@ xpt_files_1718 <- df_2017_2018$complete_urls
 
 vars_summary_all_1718 <- data.frame()
 
-ifelse(!dir.exists("data/S2017_2018_rds/"),
-  dir.create("data/S2017_2018_rds/", recursive = TRUE), FALSE
+ifelse(!dir.exists("raw_data/df_2017_2018_rds/"),
+  dir.create("raw_data/df_2017_2018_rds/", recursive = TRUE), FALSE
 )
 
 for (i in 1:length(xpt_files_1718)) {
@@ -183,7 +182,7 @@ for (i in 1:length(xpt_files_1718)) {
   temp_data <- read_xpt(url(data_url_string)) %>%
     clean_names(case = "snake")
 
-  saveRDS(temp_data, file = paste0("data/S2017_2018_rds/", df_2017_2018[i, "rds_name"]))
+  saveRDS(temp_data, file = paste0("raw_data/df_2017_2018_rds/", df_2017_2018[i, "rds_name"]))
   rm(temp_data, data_url_string)
 
   htm_url_string <- df_2017_2018[i, "htm_files"]
@@ -191,7 +190,7 @@ for (i in 1:length(xpt_files_1718)) {
   download.file(
     url = htm_url_string,
     destfile = paste0(
-      "data/S2017_2018_rds/",
+      "raw_data/df_2017_2018_rds/",
       str_replace_all(htm_url_string, "https\\:\\/\\/wwwn\\.cdc.gov\\/Nchs\\/Nhanes\\/2017-2018\\/", "")
     )
   )
