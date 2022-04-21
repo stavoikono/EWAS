@@ -1,0 +1,216 @@
+---
+title: "Downloading US NHANES 2003-2004 2003-2004 and 2013-2014 data"
+author: "Water and Health Laboratory - Cyprus University of Technology"
+date: '`r format(Sys.time(), "%d %B, %Y")`'
+output:  
+  rmdformats::material:
+    highlight: kate
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r S0-DataDownload-final-1, include=FALSE}
+
+ipak <- function(pkg) {
+  new.pkg <- pkg[!(pkg %in% installed.packages()[, "Package"])]
+  if (length(new.pkg)) {
+    install.packages(new.pkg, dependencies = TRUE)
+  }
+  sapply(pkg, require, character.only = TRUE)
+}
+packages <- c("haven", "tidyverse", "janitor", "XML")
+
+ipak(packages)
+```
+
+# Downloading 2013-2014 data
+
+```{r S0-DataDownload-final-2 }
+theme_xpt <- c(
+  "ALB_CR_H.XPT","BIOPRO_H.XPT","BMX_H.XPT","BPX_H.XPT","CBC_H.XPT","COT_H.XPT",
+  "DBQ_H.XPT","DEMO_H.XPT","DIQ_H.XPT","DR1TOT_H.XPT","FASTQX_H.XPT","GHB_H.XPT",
+  "HDL_H.XPT","HEPA_H.XPT","HEPB_S_H.XPT","HSQ_H.XPT","IHGEM_H.XPT","MCQ_H.XPT",
+  "PAQ_H.XPT","PBCD_H.XPT","PUQMEC_H.XPT","SMQFAM_H.XPT","SMQRTU_H.XPT","TCHOL_H.XPT"
+)
+```
+
+```{r S0-DataDownload-final-3 }
+df_2013_2014 <- as.data.frame(theme_xpt) %>%
+  mutate(complete_urls = paste0("https://wwwn.cdc.gov/Nchs/Nhanes/2013-2014/", theme_xpt)) %>%
+  mutate(rds_name = paste0(str_replace_all(theme_xpt, "\\.XPT", "\\.rds"))) %>%
+  mutate(htm_files = paste0("https://wwwn.cdc.gov/Nchs/Nhanes/2013-2014/", str_replace_all(theme_xpt, "\\.XPT", "\\.htm")))
+
+xpt_files <- df_2013_2014$complete_urls
+
+vars_summary_all <- data.frame()
+
+ifelse(!dir.exists("data/S2013_2014_rds/"),
+  dir.create("data/S2013_2014_rds/", recursive = TRUE), FALSE
+)
+
+for (i in 1:length(xpt_files)) {
+  
+  data_url_string <- df_2013_2014[i, "complete_urls"]
+
+  temp_data <- read_xpt(url(data_url_string)) %>%
+    clean_names(case = "snake")
+
+  saveRDS(temp_data, file = paste0("data/S2013_2014_rds/", df_2013_2014[i, "rds_name"]))
+  rm(temp_data, data_url_string)
+
+  htm_url_string <- df_2013_2014[i, "htm_files"]
+
+  download.file(
+    url = htm_url_string,
+    destfile = paste0(
+      "data/S2013_2014_rds/",
+      str_replace_all(htm_url_string, "https\\:\\/\\/wwwn\\.cdc.gov\\/Nchs\\/Nhanes\\/2013-2014\\/", "")
+    )
+  )
+
+
+  vars_summary <- readHTMLList(readLines(htm_url_string), trim = T, header = T)[2] %>%
+    as.data.frame() %>%
+    separate(col = 1, sep = " - ", into = c("var_name", "summary"))
+
+  vars_summary_all <- bind_rows(vars_summary_all, vars_summary)
+
+  rm(htm_url_string, vars_summary)
+}
+
+
+ifelse(!dir.exists("file_data/"),
+  dir.create("file_data/", recursive = TRUE), FALSE
+)
+
+saveRDS(vars_summary_all, "file_data/vars_summary_all_2013.rds")
+```
+
+
+# Downloading 2015-2016 data
+
+```{r S0-DataDownload-final-4 }
+theme_xpt_1516 <- c(
+  "ALB_CR_I.XPT","BIOPRO_I.XPT","BMX_I.XPT","BPX_I.XPT","CBC_I.XPT","COT_I.XPT","DBQ_I.XPT",
+  "DEMO_I.XPT","DIQ_I.XPT","DR1TOT_I.XPT","FASTQX_I.XPT","GHB_I.XPT","HDL_I.XPT","HEPA_I.XPT",
+  "HEPB_S_I.XPT","HEPBD_I.XPT","HEPC_I.XPT","HEPE_I.XPT","HSCRP_I.XPT","HSQ_I.XPT","IHGEM_I.XPT",
+  "MCQ_I.XPT","PAQ_I.XPT","PBCD_I.XPT","PUQMEC_I.XPT","SMQFAM_I.XPT","SMQRTU_I.XPT","TCHOL_I.XPT"
+)
+```
+
+
+```{r S0-DataDownload-final-5 }
+df_2015_2016 <- as.data.frame(theme_xpt_1516) %>%
+  mutate(complete_urls = paste0("https://wwwn.cdc.gov/Nchs/Nhanes/2015-2016/", theme_xpt_1516)) %>%
+  mutate(rds_name = paste0(str_replace_all(theme_xpt_1516, "\\.XPT", "\\.rds"))) %>%
+  mutate(htm_files = paste0("https://wwwn.cdc.gov/Nchs/Nhanes/2015-2016/", str_replace_all(theme_xpt_1516, "\\.XPT", "\\.htm")))
+
+xpt_files_1516 <- df_2015_2016$complete_urls
+
+vars_summary_all_1516 <- data.frame()
+
+ifelse(!dir.exists("data/S2015_2016_rds/"),
+  dir.create("data/S2015_2016_rds/", recursive = TRUE), FALSE
+)
+
+for (i in 1:length(xpt_files_1516)) {
+  data_url_string <- df_2015_2016[i, "complete_urls"]
+
+  temp_data <- read_xpt(url(data_url_string)) %>%
+    clean_names(case = "snake")
+
+  saveRDS(temp_data, file = paste0("data/S2015_2016_rds/", df_2015_2016[i, "rds_name"]))
+  rm(temp_data, data_url_string)
+
+  htm_url_string <- df_2015_2016[i, "htm_files"]
+
+  download.file(
+    url = htm_url_string,
+    destfile = paste0(
+      "data/S2015_2016_rds/",
+      str_replace_all(htm_url_string, "https\\:\\/\\/wwwn\\.cdc.gov\\/Nchs\\/Nhanes\\/2015-2016\\/", "")
+    )
+  )
+
+
+  vars_summary <- readHTMLList(readLines(htm_url_string), trim = T, header = T)[2] %>%
+    as.data.frame() %>%
+    separate(col = 1, sep = " - ", into = c("var_name", "summary"))
+
+  vars_summary_all_1516 <- bind_rows(vars_summary_all_1516, vars_summary)
+
+  rm(htm_url_string, vars_summary)
+
+}
+
+
+ifelse(!dir.exists("file_data/"),
+  dir.create("file_data/", recursive = TRUE), FALSE
+)
+
+saveRDS(vars_summary_all_1516, "file_data/vars_summary_all_2015.rds")
+```
+
+# Downloading 2017-2018 data
+
+```{r S0-DataDownload-final-4 }
+theme_xpt_1718 <- c(
+  "ALB_CR_J.XPT","BIOPRO_J.XPT","BMX_J.XPT","BPX_J.XPT","CBC_J.XPT","COT_J.XPT","DBQ_J.XPT",
+  "DEMO_J.XPT","DIQ_J.XPT","DR1TOT_J.XPT","FASTQX_J.XPT","GHB_J.XPT","HDL_J.XPT","HEPA_J.XPT",
+  "HEPB_S_J.XPT","HEPBD_J.XPT","HEPC_J.XPT","HEPE_J.XPT","HSCRP_J.XPT","HSQ_J.XPT","IHGEM_J.XPT",
+  "MCQ_J.XPT","PAQ_J.XPT","PBCD_J.XPT","PUQMEC_J.XPT","SMQFAM_J.XPT","SMQRTU_J.XPT","TCHOL_J.XPT"
+)
+```
+
+
+```{r }
+df_2017_2018 <- as.data.frame(theme_xpt_1718) %>%
+  mutate(complete_urls = paste0("https://wwwn.cdc.gov/Nchs/Nhanes/2017-2018/", theme_xpt_1718)) %>%
+  mutate(rds_name = paste0(str_replace_all(theme_xpt_1718, "\\.XPT", "\\.rds"))) %>%
+  mutate(htm_files = paste0("https://wwwn.cdc.gov/Nchs/Nhanes/2017-2018/", str_replace_all(theme_xpt_1718, "\\.XPT", "\\.htm")))
+
+xpt_files_1718 <- df_2017_2018$complete_urls
+
+vars_summary_all_1718 <- data.frame()
+
+ifelse(!dir.exists("data/S2017_2018_rds/"),
+  dir.create("data/S2017_2018_rds/", recursive = TRUE), FALSE
+)
+
+for (i in 1:length(xpt_files_1718)) {
+  data_url_string <- df_2017_2018[i, "complete_urls"]
+
+  temp_data <- read_xpt(url(data_url_string)) %>%
+    clean_names(case = "snake")
+
+  saveRDS(temp_data, file = paste0("data/S2017_2018_rds/", df_2017_2018[i, "rds_name"]))
+  rm(temp_data, data_url_string)
+
+  htm_url_string <- df_2017_2018[i, "htm_files"]
+
+  download.file(
+    url = htm_url_string,
+    destfile = paste0(
+      "data/S2017_2018_rds/",
+      str_replace_all(htm_url_string, "https\\:\\/\\/wwwn\\.cdc.gov\\/Nchs\\/Nhanes\\/2017-2018\\/", "")
+    )
+  )
+
+
+  vars_summary <- readHTMLList(readLines(htm_url_string), trim = T, header = T)[2] %>%
+    as.data.frame() %>%
+    separate(col = 1, sep = " - ", into = c("var_name", "summary"))
+
+  vars_summary_all_1718 <- bind_rows(vars_summary_all_1718, vars_summary)
+
+  rm(htm_url_string, vars_summary)
+
+}
+
+
+ifelse(!dir.exists("file_data/"),
+  dir.create("file_data/", recursive = TRUE), FALSE
+)
+
+saveRDS(vars_summary_all_1718, "file_data/vars_summary_all_2017.rds")
+```
