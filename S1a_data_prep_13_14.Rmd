@@ -27,34 +27,39 @@ demo <- readRDS("raw_data/df_2013_2014_rds/DEMO_H.rds")
 demo <- demo %>%
   select(seqn,ridageyr,riagendr,ridreth3,dmdborn4,dmdcitzn,
                 dmdeduc3,dmdhhsiz,dmdfmsiz,dmdhredu,dmdhrmar,indfmpir,
-                wtint2yr, wtmec2yr, sdmvstra,sdmvpsu) %>%
-  filter(ridageyr<=18 & ridageyr>=12)
+                wtint2yr, wtmec2yr, sdmvstra,sdmvpsu) 
 
-filter0 <- nearZeroVar(demo, freqCut = 99/1, names = T)
+#filter(ridageyr<=18 & ridageyr>=12)
 
-demo <- demo %>% select(!all_of(filter0))
+#filter0 <- nearZeroVar(demo, freqCut = 99/1, names = T)
+
+#demo <- demo %>% select(!all_of(filter0))
 ```
 
 
 ```{r}
 demo <- demo %>% mutate(
   sex=as.factor(case_when(riagendr==1 ~ "Male",
-                          riagendr==2 ~ "Female")),
+                          riagendr==2 ~ "Female",
+                          TRUE ~ NA_character_)),
   ethnicity=as.factor(case_when(ridreth3==1 ~ "Mexican American",#"Mexican American"
                                 ridreth3==2 ~ "Other Hispanic", #"Other Hispanic"
                                 ridreth3==3 ~ "Non-Hispanic White", #"Non-Hispanic White"
                                 ridreth3==4 ~ "Non-Hispanic Black", #"Non-Hispanic Black"
                                 ridreth3==6 ~ "Non-Hispanic Asian", #"Non-Hispanic Asian"
                                 ridreth3==7 ~ "Other", #"Other, incl. multi-racial"
+                                TRUE ~ NA_character_
                                    )),
   birtCountry= as.factor(case_when(dmdborn4==1 ~ "US Born",
                                    dmdborn4==2 ~ "No US Born",
                                    dmdborn4==77 ~ NA_character_,
-                                   dmdborn4==99 ~ NA_character_)),
+                                   dmdborn4==99 ~ NA_character_,
+                                   TRUE ~ NA_character_)),
   citizenship= as.factor(case_when(dmdcitzn==1 ~ "US citizen",
                                    dmdcitzn==2 ~ "No US citizen",
                                    dmdcitzn==7 ~ NA_character_,
-                                   dmdcitzn==9 ~ NA_character_)),
+                                   dmdcitzn==9 ~ NA_character_,
+                                   TRUE ~ NA_character_)),
   edu=case_when(dmdeduc3==4 ~ "Primary", #"Up to primary",
                 dmdeduc3==5 ~ "Primary", #"Up to primary",
                 dmdeduc3==55 ~ "Primary",
@@ -69,13 +74,15 @@ demo <- demo %>% mutate(
                 dmdeduc3==13 ~ "High school grad", #"High school graduate or a higher education"
                 dmdeduc3==14 ~ "High school grad",
                 dmdeduc3==15 ~ "High school grad",
-                dmdeduc3==99 ~ NA_character_),
+                dmdeduc3==99 ~ NA_character_,
+                TRUE ~ NA_character_),
   dmdhredz=case_when(dmdhredu==1 ~ "1",
                      dmdhredu==2 ~ "1",
                      dmdhredu==3 ~ "2",
                      dmdhredu==4 ~ "3",
                      dmdhredu==5 ~ "3",
-                     dmdhredu==9 ~ NA_character_),
+                     dmdhredu==9 ~ NA_character_,
+                     TRUE ~ NA_character_),
   dmdhrmaz=case_when(dmdhrmar==1 ~ "1",
                      dmdhrmar==6 ~ "1",
                      dmdhrmar==2 ~ "2",
@@ -83,7 +90,8 @@ demo <- demo %>% mutate(
                      dmdhrmar==4 ~ "2",
                      dmdhrmar==5 ~ "3",
                      dmdhrmar==77 ~ NA_character_,
-                     dmdhrmar==99 ~ NA_character_)
+                     dmdhrmar==99 ~ NA_character_,
+                     TRUE ~ NA_character_)
 ) %>%
   select(-c(dmdhredu,dmdhrmar,riagendr,ridreth3,dmdborn4,dmdcitzn,dmdeduc3))
 ```
@@ -140,28 +148,34 @@ diet_data <- diet_data %>% mutate(
                              dbd100==2 ~ "Occasionally",
                              dbd100==3 ~ "Very often",
                              dbd100==7 ~ NA_character_,
-                             dbd100==9 ~ NA_character_)),
+                             dbd100==9 ~ NA_character_,
+                             TRUE ~ NA_character_)),
   drd360=as.factor(case_when(drd360==1 ~ "Yes",
                              drd360==2 ~ "No",
                              drd360==7 ~ NA_character_,
-                             drd360==9 ~ NA_character_)),
+                             drd360==9 ~ NA_character_,
+                             TRUE ~ NA_character_)),
   drd340=as.factor(case_when(drd340==1 ~ "Yes",
                              drd340==2 ~ "No",
                              drd340==7 ~ NA_character_,
-                             drd340==9 ~ NA_character_)),
+                             drd340==9 ~ NA_character_,
+                             TRUE ~ NA_character_)),
   dr1twsz=as.factor(case_when(dr1tws==1 ~ "Community supply",
                               dr1tws==2 ~ "Other",
                               dr1tws==3 ~ "Other",
                               dr1tws==4 ~ "No tap water",
-                              dr1tws==99 ~ NA_character_)),
+                              dr1tws==99 ~ NA_character_,
+                              TRUE ~ NA_character_)),
   drqsdiet=as.factor(case_when(drqsdiet==1 ~ "Yes",
                                drqsdiet==2 ~ "No",
-                               drqsdiet==9 ~ NA_character_)),
+                               drqsdiet==9 ~ NA_character_,
+                               TRUE ~ NA_character_)),
   drqsprep=as.factor(case_when(drqsprep==1 ~ "Never",
                                drqsprep==2 ~ "Rarely",
                                drqsprep==3 ~ "Occasionally",
                                drqsprep==4 ~ "Very ofter",
-                               drqsprep==9 ~ NA_character_))
+                               drqsprep==9 ~ NA_character_,
+                               TRUE ~ NA_character_))
 ) %>% select(-dr1tws)
 
 catVarDiet <- c("dbd100","drd360","drd340","dr1twsz","drqsdiet","drqsprep")
@@ -228,7 +242,7 @@ catVarQuest <- c("hsd010","hsq500","hsq510","hsq520","diq170","diq172","diq160",
                  "dbq390","dbq424","mcq010","mcq300b","puq100","puq110","paq706","paq710","paq715",
                  "smd460","smq681","smdany")
 
-
+rm(hsq, diab, dbq, mcq,puqmec,paq,smqfam,smqrtu)
 ```
 
 
@@ -245,3 +259,124 @@ quest_data <- quest_data %>%
   mutate_at(c("dbd895","dbd900","dbd905","dbd910"), as.numeric)
 
 ```
+
+
+
+```{r}
+alb <- readRDS("raw_data/df_2013_2014_rds/ALB_CR_H.rds") %>%
+  select(seqn,urxuma, urxucr, urdact)
+
+
+hdl <- readRDS("raw_data/df_2013_2014_rds/HDL_H.rds") %>%
+  select(seqn, lbdhdd)
+
+tchol <- readRDS("raw_data/df_2013_2014_rds/TCHOL_H.rds") %>%
+  select(seqn, lbxtc)
+
+
+cbc <- readRDS("raw_data/df_2013_2014_rds/CBC_H.rds")
+
+cot <- readRDS("raw_data/df_2013_2014_rds/COT_H.rds") %>%
+  select(seqn, lbxcot, lbxhct)
+
+
+fast <- readRDS("raw_data/df_2013_2014_rds/FASTQX_H.rds") %>%
+  select(seqn,phq020,phq030,phq040,phq050,phq060,phafsthr,phdsesn)
+
+
+ghb <- readRDS("raw_data/df_2013_2014_rds/GHB_H.rds")
+
+hepa <- readRDS("raw_data/df_2013_2014_rds/HEPA_H.rds")
+
+hepbs <- readRDS("raw_data/df_2013_2014_rds/HEPB_S_H.rds")
+
+pbcd <- readRDS("raw_data/df_2013_2014_rds/PBCD_H.rds") %>%
+  select(seqn,lbxbpb, lbxbcd, lbxthg, lbxbse ,lbxbmn)
+
+ihgem <- readRDS("raw_data/df_2013_2014_rds/IHGEM_H.rds") %>%
+  select(seqn, lbxihg, lbxbge, lbxbgm)
+
+biopro <- readRDS("raw_data/df_2013_2014_rds/BIOPRO_H.rds")
+
+lab_data<-join_all(list(alb, biopro, cbc, cot, fast,ghb ,
+                         hdl, hepa, hepbs, tchol,pbcd,ihgem), by='seqn', type='full')
+
+
+
+conVarLab <- c("urxuma","urxucr","urdact","lbxsatsi","lbxsal","lbdsalsi","lbxsapsi",
+               "lbxsassi","lbxsc3si","lbxsbu","lbdsbusi","lbxsclsi","lbxsck","lbxscr",
+               "lbdscrsi","lbxsgb","lbdsgbsi","lbxsgl","lbdsglsi","lbxsgtsi","lbxsir",
+               "lbdsirsi","lbxsldsi","lbxsossi","lbxsph","lbdsphsi","lbxsksi","lbxsnasi",
+               "lbxstb","lbdstbsi","lbxsca","lbdscasi","lbxsch","lbdschsi","lbxstp",
+               "lbdstpsi","lbxstr","lbdstrsi","lbxsua","lbdsuasi","lbxwbcsi","lbxlypct",
+               "lbxmopct","lbxnepct","lbxeopct","lbxbapct","lbdlymno","lbdmono","lbdneno",
+               "lbdeono","lbdbano","lbxrbcsi","lbxhgb","lbxhct","lbxmcvsi","lbxmchsi",
+               "lbxmc","lbxrdw","lbxpltsi","lbxmpsi","lbxcot","lbxgh","lbdhdd","lbxtc",
+               "lbxbpb","lbxbcd","lbxthg","lbxbse","lbxbmn","lbxihg","lbxbgm")
+
+catVarLab <- c("phq040","phafsthr","phdsesn","lbxha","lbxhbs")
+
+lab_data <- lab_data[,c("seqn", conVarLab, catVarLab)]
+
+rm(alb, biopro, cbc, cot, fast,ghb , hdl, hepa, hepbs, tchol,pbcd,ihgem)
+```
+
+```{r}
+df_13_14 <- join_all(list(demo, quest_data, diet_data, exam_data, lab_data), by='seqn', type='left')
+
+df_13_14 <- df_13_14 %>%
+  mutate(included = ifelse(ridageyr<=18 & ridageyr>=12 & !is.na(bmxbmi),T,F)) %>%
+  mutate(bmxbmi_cdc_sds = round(sds(bmxbmi,
+                            age = ridageyr,
+                            sex = sex,
+                            male = "Male", female = "Female",
+                            ref = cdc.ref,
+                            item = "bmi",
+                            type = "SDS"), digits=2)) %>%
+  mutate(bmxbmi_cdc_perc = round(sds(bmxbmi,
+                            age = ridageyr,
+                            sex = sex,
+                            male = "Male", female = "Female",
+                            ref = cdc.ref,
+                            item = "bmi",
+                            type = "perc"), digits=2)) %>%
+  mutate(bmxbmi_cdc_perc = cut(bmxbmi_cdc_perc, breaks=c(-Inf, 0.05, 0.85, 0.95, Inf), 
+                               labels=c("Underweight","Healthy Weight","Overweight","Obese")))
+```
+
+```{r}
+df_13_14 %>% 
+  filter(included==T) %>%
+  inspectdf::inspect_na() %>%
+  arrange(desc(pcnt))
+```
+
+```{r}
+con_vars <- c("ridageyr","indfmpir",conVarExam,conVarDiet,conVarLab)
+
+df_13_14_final <- df_13_14 %>%
+  mutate_at( con_vars,
+            .funs = ~scale(log(.+1e-10), scale=TRUE, center=TRUE))
+```
+
+```{r, eval=FALSE}
+asdf <- df_13_14_final %>% filter(included==T)
+
+table(sum(is.na(asdf$wtdrd1)))
+table(sum(is.na(asdf$wtint2yr)))
+table(sum(is.na(asdf$wtmec2yr)))
+```
+
+```{r}
+df_13_14_final <- svydesign(id  = ~sdmvpsu,
+                          strata  = ~sdmvstra,
+                          weights = ~wtmec2yr,
+                          nest    = TRUE,
+                          data = df_13_14_final)
+
+
+# Here we use "subset" to tell "nhanesDesign" to look for our study population
+df_13_14_final <- subset(df_13_14_final, included==TRUE)
+```
+
+
