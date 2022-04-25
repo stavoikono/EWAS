@@ -379,4 +379,34 @@ df_13_14_final <- svydesign(id  = ~sdmvpsu,
 df_13_14_final <- subset(df_13_14_final, included==TRUE)
 ```
 
+```{r}
+source("functions/utils.R")
 
+vars_summary_13 <- readRDS("file_data/vars_summary_all_2013.rds") %>% 
+  mutate(var_name=tolower(var_name)) %>%  
+  add_row(var_name="ethnicity", summary="Ethnicity") %>% 
+  add_row(var_name="sex", summary="Sex") %>% 
+  add_row(var_name="edu", summary="Educational level")  %>%
+  add_row(var_name="bmxbmi_cdc_sds", summary="BMI SDS") %>%
+  add_row(var_name="bmxbmi_cdc_perc", summary="BMI SDS percentile") %>%
+  add_row(var_name="bmxbmi_cat_perc", summary="BMI categories") %>%
+  add_row(var_name="physical_act", summary="Physical activity")
+
+
+NH_int_sex <- cat_small_tables_forsex(sex, df_13_14_final)
+
+NH_int_cont_cat <- bind_rows(cont_small_tables_bysex(ridageyr, df_13_14_final),
+                  cont_small_tables_bysex(indfmpir, df_13_14_final),
+              cat_small_tables_bysex(ethnicity, df_13_14_final),
+              cat_small_tables_bysex(edu, df_13_14_final)) %>% 
+  left_join(., vars_summary_13, by="var_name") %>% 
+  relocate(summary, .before=values) %>% 
+  select(-var_name)
+
+library(kable)
+```
+
+
+`r kbl(NH_int_sex, caption= "Sex characteristics of study participants: Weighted statistics (mean (se) and median [iqr] presented for the continuous variables and percentage [95%] for the categorical variables).") %>% kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"), font_size = 15) `
+
+`r kbl(NH_int_cont_cat, caption= "Demographic characteristics of study participants: Weighted statistics (mean (se) and median [iqr] presented for the continuous variables and percentage [95%] for the categorical variables).") %>% kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"), font_size = 15) `
